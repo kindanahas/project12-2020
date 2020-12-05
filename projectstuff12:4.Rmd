@@ -2,7 +2,9 @@
 title: "projectcode5/12"
 author: "Kinda Nahas"
 date: "12/5/2020"
-output: word_document
+output:
+  pdf_document: default
+  word_document: default
 ---
 
 ```{r setup, include=FALSE}
@@ -51,7 +53,7 @@ AATZM <- tq_get(c("AAPL", "AMZN","TSLA", "ZM", "MSFT" ),
 
 You can also embed plots, for example:
 
-```{r pressure, echo=FALSE}
+```{r pressuree, echo=FALSE}
 AAPLs %>%
   ggplot(aes(x = date, y = close)) +
   geom_line() +
@@ -69,13 +71,13 @@ AAPLs %>%
 Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
 
 
-```{r pressure, echo=FALSE}
+```{r pressure0, echo=FALSE}
 justapple <- read_excel("justapple.xlsx")
 
 ```
 
 
-```{r pressure, echo=TRUE}
+```{r pressure00, echo=TRUE}
 justapple <- read_excel("justapple.xlsx")
 
 p <- ggplot(justapple, aes(x = Date))
@@ -100,7 +102,8 @@ p
 ```
 
 
-```{r pressure1, echo=TRUE}
+```{r pressure12, echo=TRUE}
+
 p <- ggplot(justapple, aes(x = Date))
 p <- p + geom_line(aes(y = Close, colour = "close"))
 
@@ -124,26 +127,26 @@ p
 
 
 
-```{r pressure1, echo=TRUE}
+```{r pressure2, echo=TRUE}
 
 
 ```
 
 
 
-```{r pressure1, echo=TRUE}
+```{r pressure3, echo=TRUE}
 
 
 ```
 
 
-```{r pressure1, echo=TRUE}
+```{r pressure4, echo=TRUE}
 
 
 ```
 
 
-```{r pressure1, echo=TRUE}
+```{r pressure5, echo=TRUE}
 
 
 ```
