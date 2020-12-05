@@ -1,0 +1,141 @@
+library(readxl)
+stonk <- read_excel("2020stockmktrevised copy 2.xlsx")
+View(stonk) 
+
+install.packages("tidyquant")
+install.packages("tidyverse")
+library(tidyverse)
+library(tidyquant) 
+library(ggplot2)
+library(dplyr)
+library(patchwork) # To display 2 charts together
+library(hrbrthemes)
+library(readxl)
+
+AAPLs <- tq_get("AAPL", get = "stock.prices", from = "2020-01-02", to = "2020-08-07") 
+AMZNs <- tq_get("AMZN", get = "stock.prices", from = "2020-01-02", to = "2020-08-07")
+TSLAs <- tq_get("TSLA", get = "stock.prices", from = "2020-01-02", to = "2020-08-07")
+ZMs <- tq_get("ZM", get = "stock.prices", from = "2020-01-02", to = "2020-08-07")
+MSFTs <- tq_get("MSFT", get = "stock.prices", from = "2020-01-02", to = "2020-08-07")
+
+AATZM <- tq_get(c("AAPL", "AMZN","TSLA", "ZM", "MSFT" ),
+                      get  = "stock.prices",
+                      from = "2020-01-02",
+                      to   = "2020-08-07")
+
+
+
+AAPLs %>%
+  ggplot(aes(x = date, y = close)) +
+  geom_line() +
+  labs(title = "AAPL Line Chart", y = "Closing Price", x = "") + 
+  theme_tq()
+
+#candlestick? 
+AAPLs %>%
+  ggplot(aes(x = date, y = close)) +
+  geom_barchart(aes(open = open, high = high, low = low, close = close)) +
+  labs(title = "AAPL Bar Chart", y = "Closing Price", x = "") + 
+  theme_tq()
+
+
+
+
+pracaaapl <- read_excel("pracaaapl.xlsx")
+View(pracaaapl) 
+
+
+
+p <- ggplot(pracaaapl, aes(x = Date))
+p <- p + geom_line(aes(y = Volumer, colour = "robin"))
+ 
+# adding the relative humidity data, transformed to match roughly the range of the temperature
+p <- p + geom_line(aes(y = Volume/600, colour = "volume"))
+ 
+ # now adding the secondary axis, following the example in the help file ?scale_y_continuous
+ # and, very important, reverting the above transformation
+p <- p + scale_y_continuous(sec.axis = sec_axis(~.*50, name = "Total Volume"))
+ 
+ # modifying colours and theme options
+p <- p + scale_colour_manual(values = c("blue", "red"))
+p <- p + labs(y = "Robinhood User holding",
+                             x = "Date ",
+                            colour = "Parameter")
+p <- p + theme(legend.position = c(0.8, 0.9))
+ p
+ 
+ 
+ 
+ p <- ggplot(pracaaapl, aes(x = Date))
+ p <- p + geom_line(aes(y = Close, colour = "close"))
+ 
+ # adding the relative humidity data, transformed to match roughly the range of the temperature
+ p <- p + geom_line(aes(y = Volumer/5500, colour = "volume"))
+ 
+ # now adding the secondary axis, following the example in the help file ?scale_y_continuous
+ # and, very important, reverting the above transformation
+ p <- p + scale_y_continuous(sec.axis = sec_axis(~.*5000, name = "Robinhood user holdings"))
+ 
+ # modifying colours and theme options
+ p <- p + scale_colour_manual(values = c("blue", "red"))
+ p <- p + labs(y = "Closing stock price",
+               x = "Date ",
+               colour = "Parameter")
+ p <- p + theme(legend.position = c(0.8, 0.9))
+ p
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ #for two yaxis
+ #try to code for these sections instead of new data set
+ library(readxl)
+ practsla <- read_excel("practsla.xlsx")
+ View(practsla) 
+ 
+ 
+ p <- ggplot(practsla, aes(x = Date))
+ p <- p + geom_line(aes(y = Volumer, colour = "robin"))
+ 
+ # adding the relative humidity data, transformed to match roughly the range of the temperature
+ p <- p + geom_line(aes(y = Volume/500, colour = "volume"))
+ 
+ # now adding the secondary axis, following the example in the help file ?scale_y_continuous
+ # and, very important, reverting the above transformation
+ p <- p + scale_y_continuous(sec.axis = sec_axis(~.*50, name = "Total Volume"))
+ 
+ # modifying colours and theme options
+ p <- p + scale_colour_manual(values = c("blue", "red"))
+ p <- p + labs(y = "Robinhood User holding",
+               x = "Date ",
+               colour = "Parameter")
+ p <- p + theme(legend.position = c(0.8, 0.9))
+ p
+ 
+ 
+ p <- ggplot(practsla, aes(x = Date))
+ p <- p + geom_line(aes(y = Close, colour = "close"))
+ 
+ # adding the relative humidity data, transformed to match roughly the range of the temperature
+ p <- p + geom_line(aes(y = Volumer/1600, colour = "volume"))
+ 
+ # now adding the secondary axis, following the example in the help file ?scale_y_continuous
+ # and, very important, reverting the above transformation
+ p <- p + scale_y_continuous(sec.axis = sec_axis(~.*1500, name = "Robinhood user holdings"))
+ 
+ # modifying colours and theme options
+ p <- p + scale_colour_manual(values = c("blue", "red"))
+ p <- p + labs(y = "Closing stock price",
+               x = "Date ",
+               colour = "Parameter")
+ p <- p + theme(legend.position = c(0.8, 0.9))
+ p
+ 
