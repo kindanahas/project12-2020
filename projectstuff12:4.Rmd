@@ -122,7 +122,6 @@ p <- p + labs(y = "Closing stock price",
 p <- p + theme(legend.position = c(0.8, 0.9))
 p
 
-![image](https://user-images.githubusercontent.com/73708343/101266181-2be06f80-3712-11eb-9705-726d6a765bf8.png)
 
 
 ```
