@@ -1,0 +1,478 @@
+---
+title: "projectcode5/12"
+author: "Kinda Nahas"
+date: "12/5/2020"
+output:
+  pdf_document: default
+  word_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+
+#in case you dont have some of these packages:
+#install.packages("tidyquant")
+#install.packages("tidyverse")
+library(readxl)
+library(tidyverse)
+library(tidyquant) 
+library(ggplot2)
+library(dplyr)
+library(patchwork) # To display 2 charts together
+library(hrbrthemes)
+library(readxl)
+
+setwd("~/SDS Labs")
+stonk <- read_excel("2020stockmktrevised12-1.xlsx")
+
+
+```
+
+
+
+
+```{r cars}
+AAPLs <- tq_get("AAPL", get = "stock.prices", from = "2020-01-02", to = "2020-08-07") 
+AMZNs <- tq_get("AMZN", get = "stock.prices", from = "2020-01-02", to = "2020-08-07")
+TSLAs <- tq_get("TSLA", get = "stock.prices", from = "2020-01-02", to = "2020-08-07")
+ZMs <- tq_get("ZM", get = "stock.prices", from = "2020-01-02", to = "2020-08-07")
+MSFTs <- tq_get("MSFT", get = "stock.prices", from = "2020-01-02", to = "2020-08-07")
+
+#keep in mind tq_get only takes data from specific sources, "stock.prices" pulls the open, high, low, close, volume and adjusted stock prices from yahoo finance, which is also the same data used in the file
+#so robinhood user holding and other variables are not included in this
+
+AATZM <- tq_get(c("AAPL", "AMZN","TSLA", "ZM", "MSFT" ),
+                get  = "stock.prices",
+                from = "2020-01-02",
+                to   = "2020-08-07")
+end <- as_date("2020-08-07")
+
+
+```
+
+## Including Plots
+
+You can also embed plots, for example:
+
+```{r 1, echo=TRUE}
+AAPLs %>%
+  ggplot(aes(x = date, y = close)) +
+  geom_line() +
+  labs(title = "AAPL Line Chart", y = "Closing Price", x = "") + 
+  theme_tq()
+
+#candlestick? 
+AAPLs %>%
+  ggplot(aes(x = date, y = close)) +
+  geom_barchart(aes(open = open, high = high, low = low, close = close)) +
+  labs(title = "AAPL Bar Chart", y = "Closing Price", x = "") + 
+  theme_tq()
+```
+
+Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
+
+
+```{r 2, echo=TRUE}
+justapple <- read_excel("justapple.xlsx")
+
+```
+
+
+```{r 3, echo=TRUE}
+justapple <- read_excel("justapple.xlsx")
+
+p <- ggplot(justapple, aes(x = Date))
+p <- p + geom_line(aes(y = Volumer, colour = "robin"))
+
+# adding the total volume, transformed to match roughly the range of the robinhood volume
+p <- p + geom_line(aes(y = Volume/600, colour = "volume"))
+
+# now adding the secondary axis, following the example in the help file ?scale_y_continuous
+# and, very important, reverting the above transformation
+p <- p + scale_y_continuous(sec.axis = sec_axis(~.*50, name = "Total Volume"))
+
+# modifying colours and theme options
+p <- p + scale_colour_manual(values = c("blue", "red"))
+p <- p + labs(y = "Robinhood User holding",
+              x = "Date ",
+              colour = "Parameter")
+p <- p + theme(legend.position = c(0.8, 0.9))
+p
+
+
+```
+
+
+
+```{r 4, echo=TRUE}
+
+p <- ggplot(justapple, aes(x = Date))
+p <- p + geom_line(aes(y = Close, colour = "close"))
+
+# adding the relative user holding data, transformed to match roughly the range of the closing price
+p <- p + geom_line(aes(y = Volumer/5500, colour = "volume"))
+
+# now adding the secondary axis, following the example in the help file ?scale_y_continuous
+# and, very important, reverting the above transformation
+p <- p + scale_y_continuous(sec.axis = sec_axis(~.*5000, name = "Robinhood user holdings"))
+
+# modifying colours and theme options
+p <- p + scale_colour_manual(values = c("blue", "red"))
+p <- p + labs(y = "Closing stock price",
+              x = "Date ",
+              colour = "Parameter")
+p <- p + theme(legend.position = c(0.8, 0.9))
+p
+
+
+```
+
+
+
+```{r 5, echo=TRUE}
+start <- end-weeks(27)
+AATZM  %>%
+    filter(date >= start - days(2 * 15)) %>%
+    ggplot(aes(x = date, y = close, group = symbol)) +
+    geom_candlestick(aes(open = open, high = high, low = low, close = close)) +
+    labs(title = "FANG Candlestick Chart", 
+         subtitle = "Experimenting with Mulitple Stocks",
+         y = "Closing Price", x = "") + 
+    coord_x_date(xlim = c(start, end)) +
+    facet_wrap(~ symbol, ncol = 2, scale = "free_y") + 
+    theme_tq()
+
+```
+
+
+
+```{r 6, echo=TRUE}
+start <- end - weeks(27)
+AATZM %>%
+    filter(date >= start - days(2 * 15)) %>%
+    ggplot(aes(x = date, y = close, group = symbol)) +
+    geom_candlestick(aes(open = open, high = high, low = low, close = close)) +
+    geom_ma(ma_fun = SMA, n = 15, color = "darkblue", size = 1) +
+    labs(title = "FANG Candlestick Chart", 
+         subtitle = "Experimenting with Mulitple Stocks",
+         y = "Closing Price", x = "") + 
+    coord_x_date(xlim = c(start, end)) +
+    facet_wrap(~ symbol, ncol = 2, scale = "free_y") +
+    theme_tq()
+
+```
+
+
+```{r 7, echo=TRUE}
+start <- end - weeks(6)
+AATZM %>%
+    filter(date >= start - days(2 * 50)) %>%
+    ggplot(aes(x = date, y = close, volume = volume, group = symbol)) +
+    geom_candlestick(aes(open = open, high = high, low = low, close = close)) +
+    geom_ma(ma_fun = VWMA, n = 15, wilder = TRUE, linetype = 5) +
+    geom_ma(ma_fun = VWMA, n = 50, wilder = TRUE, color = "red") + 
+    labs(title = "FANG Bar Chart", 
+         subtitle = "50 and 200-Day EMA, Experimenting with Multiple Stocks", 
+         y = "Closing Price", x = "") + 
+    coord_x_date(xlim = c(start, end)) +
+    facet_wrap(~ symbol, ncol = 2, scales = "free_y") + 
+    theme_tq()
+
+```
+
+
+```{r pressure5, echo=TRUE}
+
+
+```
+
+
+
+```{ echo=TRUE}
+
+
+```
+
+```{r}
+setwd('~/SDS Labs')
+stonk <- read_excel("2020stockmktrevised12-1.xlsx")
+stonk <- remove_missing(stonk)
+stonk$High_Low <- stonk$High-stonk$Low
+stonk$Close_Open <- stonk$Close-stonk$Open
+cats <- c(1,2,3,4,5,6,11)
+stonk$Volume <- log(stonk$Volume)
+stonk$user_holding <- log(stonk$user_holding)
+
+stonk_apple <- stonk[stonk$SYMBOL == 'AAPL']
+reg <- lm(user_holding ~., stonk[,-cats])
+summary(reg)
+```
+```{r}
+stonk_apple <- stonk[stonk$SYMBOL=='DELL',]
+reg <- lm(user_holding ~., stonk_apple[,-cats])
+summary(reg)
+```
+
+```{r}
+stonk$resids <- residuals(reg)
+stonk$predicted <- predict(reg)
+
+
+ggplot(stonk_apple, aes(x=predicted, y=resids)) + geom_point() +
+  geom_hline(yintercept=0, color = "blue") +
+  labs(title ="Residuals versus Fitted values", x = "Fitted values", y = "Residuals")
+
+ggplot(stonk_apple, aes(sample = resids)) + stat_qq() + stat_qq_line() +
+ labs(title ="Normal Probability Plot", x = "Theoretical percentiles", y = "
+Sample percentiles") 
+```
+
+```{r}
+stonk_tech <- stonk[stonk$category=='technology',]
+
+
+reg <- lm(user_holding ~., stonk[,-cats])
+summary(reg)
+```
+
+
+Typically, people use moving average models to predict price fluctuations on the next day. We will try to implement something similar with user holding predictions.
+
+Variable creation: Firstly, we see that there is a lot of variation even among similar sectors. We need a way to control for the price to the input of our model. We can try fixing this using a percentage of the stocks maximum cost instead of raw price as the input variable. 
+
+```{r}
+setwd('~/SDS Labs')
+stonk <- read_excel("2020stockmktrevised12-1.xlsx")
+stonk <- remove_missing(stonk)
+symbols <- unique(stonk$SYMBOL)
+for(i in 1:length(symbols)){
+  stonk[stonk$SYMBOL==symbols[i],3] <- sd(stonk[stonk$SYMBOL==symbols[i],]$Open)
+  stonk[stonk$SYMBOL==symbols[i],4] <- sd(stonk[stonk$SYMBOL==symbols[i],4]$High)
+  stonk[stonk$SYMBOL==symbols[i],5] <- sd(stonk[stonk$SYMBOL==symbols[i],5]$Low)
+  stonk[stonk$SYMBOL==symbols[i],6] <- sd(stonk[stonk$SYMBOL==symbols[i],6]$Close)
+  stonk[stonk$SYMBOL==symbols[i],7] <- sd(stonk[stonk$SYMBOL==symbols[i],7]$`Adj Close`)
+}
+
+stonk$High_Low <- stonk$High - stonk$Low
+stonk$Close_Open <- stonk$Close - stonk$Open
+cats <- c(1,2,3,4,5,6)
+stonk$Volume <- log(stonk$Volume)
+stonk <- remove_missing(stonk)
+stonk$user_holding <- log(stonk$user_holding)
+```
+
+```{r}
+reg <- lm(user_holding ~., stonk[,-cats])
+summary(reg)
+```
+
+```{r}
+pred <- predict(reg)
+true <- stonk$user_holding
+
+mse <- mean((pred-true)^2)
+sqrt(mse)
+```
+```{r}
+stonk$resids <- residuals(reg)
+stonk$predicted <- predict(reg)
+ggplot(stonk, aes(x=predicted, y=resids)) + geom_point() +
+  geom_hline(yintercept=0, color = "blue") +
+  labs(title ="Residuals versus Fitted values", x = "Fitted values", y = "Residuals")
+
+ggplot(stonk, aes(sample = resids)) + stat_qq() + stat_qq_line() +
+ labs(title ="Normal Probability Plot", x = "Theoretical percentiles", y = "
+Sample percentiles") 
+
+```
+
+#Time series data trial
+
+```{r}
+setwd('~/SDS Labs')
+stonk <- read_excel("2020stockmktrevised12-1.xlsx")
+stonk <- remove_missing(stonk)
+stonk$Date <- as.Date(stonk$Date)
+
+symbols <- unique(stonk$SYMBOL)
+for(i in 1:length(symbols)){
+  stonk[stonk$SYMBOL==symbols[i],3] <- sd(stonk[stonk$SYMBOL==symbols[i],]$Open)
+  stonk[stonk$SYMBOL==symbols[i],4] <- sd(stonk[stonk$SYMBOL==symbols[i],4]$High)
+  stonk[stonk$SYMBOL==symbols[i],5] <- sd(stonk[stonk$SYMBOL==symbols[i],5]$Low)
+  stonk[stonk$SYMBOL==symbols[i],6] <- sd(stonk[stonk$SYMBOL==symbols[i],6]$Close)
+  stonk[stonk$SYMBOL==symbols[i],7] <- sd(stonk[stonk$SYMBOL==symbols[i],7]$`Adj Close`)
+}
+
+stonk$High_Low <- stonk$High - stonk$Low
+stonk$Close_Open <- stonk$Close - stonk$Open
+cats <- c(1,2,3,4,5,6,15,16,17,18)
+stonk$Volume <- log(stonk$Volume)
+stonk <- remove_missing(stonk)
+stonk$user_holding <- log(stonk$user_holding)
+
+#Stocks should be affected by the most recent 5 days. Thus, we will use the most recent 5 days. This means we need to chop off the first 5 days however
+
+names <- colnames(stonk)
+names <- c(names, 'lag1', 'lag2', 'lag3', 'lag4', 'lag5')
+new_stonk <- data.frame(matrix(ncol=18, nrow=0))
+colnames(new_stonk) <- names
+
+for(i in 1:length(symbols)){
+  if(nrow(stonk[stonk$SYMBOL==symbols[i],]) < 50){
+    print('no')
+  }
+  else{
+    stock_df <- stonk[stonk$SYMBOL==symbols[i],]
+    stock_lag1 <- array(NA, dim=nrow(stock_df)-5)
+    stock_lag2 <- array(NA, dim=nrow(stock_df)-5)
+    stock_lag3 <- array(NA, dim=nrow(stock_df)-5)
+    stock_lag4 <- array(NA, dim=nrow(stock_df)-5)
+    stock_lag5 <- array(NA, dim=nrow(stock_df)-5)
+    for(j in 6:nrow(stock_df)){
+      stock_lag1[j-5] <- stock_df[j-1,9]$user_holding
+      stock_lag2[j-5] <- stock_df[j-2,9]$user_holding
+      stock_lag3[j-5] <- stock_df[j-3,9]$user_holding
+      stock_lag4[j-5] <- stock_df[j-4,9]$user_holding
+      stock_lag5[j-5] <- stock_df[j-5,9]$user_holding
+    }
+    stock_df <- stock_df[-(1:5),] #Chop off first 5 entries since they do not have previous five entries
+    stock_df$lag1 <- stock_lag1
+    stock_df$lag2 <- stock_lag2
+    stock_df$lag3 <- stock_lag3
+    stock_df$lag4 <- stock_lag4
+    stock_df$lag5 <- stock_lag5
+    new_stonk <- rbind(new_stonk, stock_df)
+  }
+}
+
+ts <- lm(user_holding ~., new_stonk[,-cats])
+summary(ts)
+```
+
+Now we have a time series model that can accurately model user holdings. Now what we really care about is whether it increases or decreases the next day. An increase indicates that public perspective is good while a decrease indicates it is bad. This can be done with closing price as well, but robinhood user holdings better reflects the average market holder's thoughts and not other external factors. 
+
+First we need to add a column that shows whether price increased the next day or not. 
+```{r}
+
+names <- colnames(new_stonk)
+names <- c(names, 'increased')
+log_stonk <- data.frame(matrix(ncol=19, nrow=0))
+colnames(log_stonk) <- names
+
+for(i in 1:length(symbols)){
+  if(nrow(new_stonk[new_stonk$SYMBOL==symbols[i],]) < 50){
+    print('no')
+  }
+  else{
+    stock_df <- new_stonk[new_stonk$SYMBOL==symbols[i],]
+    stock_increased <- array(NA, dim=nrow(stock_df)-1)
+    for(j in 1:(nrow(stock_df)-1)){
+      difference <- stock_df[j+1,]$user_holding - stock_df[j,]$user_holding
+      if(difference < 0){
+        stock_increased[j] <- 0
+      }
+      else{
+        stock_increased[j] <- 1
+      }
+    }
+    stock_df <- stock_df[1:nrow(stock_df)-1,] #Chop off first 5 entries since they do not have previous five entries
+    stock_df$increased <- stock_increased
+    log_stonk <- rbind(log_stonk, stock_df)
+  }
+  
+}
+cats <- c(1,2,3,4,5,6,9)
+
+
+```
+
+```{r}
+set.seed(1234)
+n <- nrow(log_stonk)
+K <- 10
+folds <- cut(sample(1:n), breaks = K, labels = FALSE)
+cv_acc <- array(NA, dim=10)
+cv_thresholds <- array(NA, dim=10)
+
+for(k in 1:K){
+  idx_tr <- which(folds != k)
+  idx_ts <- which(folds == k)
+  
+  reg_log <- glm(increased ~., family='binomial', log_stonk[idx_tr,-cats])
+  
+  pred <- predict(reg_log, newdata=log_stonk[idx_ts,-cats], type='response')
+  true <- log_stonk[idx_ts,]$increased
+  
+  #if they are the same, the difference is 0. If different, the difference is 1 or -1. Square and sum and divide by magnitude for accuracy
+  max_accuracy <- 0
+  max_threshold <- 0
+  for(i in 1:100){
+    test_pred <- pred
+    threshold <- i/100
+    
+    test_pred[pred<threshold] <- 0
+    test_pred[pred>threshold] <- 1
+    
+    accuracy <- 1-sum((test_pred-true)^2)/length(true)
+    if(accuracy > max_accuracy){
+      max_accuracy <- accuracy
+      max_threshold <- threshold
+    }
+  }
+  cv_acc[k] <- max_accuracy
+  cv_thresholds[k] <- max_threshold
+}
+mean(cv_acc)
+mean(cv_thresholds)
+
+```
+
+
+```{r}
+pred <- predict(reg_log, newdata=log_stonk[,-cats], type='response')
+pred[pred<0.454] <- 0
+pred[pred>0.454] <- 1
+true <- log_stonk$increased
+
+accuracy <- 1-sum((pred-true)^2)/length(true)
+table(true=log_stonk$increased, pred=pred)
+
+```
+
+
+
+```{r}
+summary(reg_log)
+```
+```{r}
+sum(log_stonk$increased)/nrow(log_stonk)
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
